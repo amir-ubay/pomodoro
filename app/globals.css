@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap");
+
+@layer base {
+  @font-face {
+    font-family: "Play";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap);
+  }
+}
