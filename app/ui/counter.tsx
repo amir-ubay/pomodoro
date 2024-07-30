@@ -6,80 +6,105 @@ import NextButton from "./component/nextButton";
 
 export function Counter() {
   var convert = require("convert-seconds");
-  const [time, setTime] = useState({
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
+  const initialTime = { hours: 0, minutes: 0, seconds: 0 };
+  const [time, setTime] = useState(initialTime);
   const { state, dispatch } = useContext(CounterContext);
   let intervalId: NodeJS.Timeout;
   let timeout: NodeJS.Timeout;
   const [theme, setTheme] = useState("red");
   const audio = new Audio("/bip.mp3");
   const alarm = new Audio("/alarm.mp3");
-  const tick = new Audio("/tik.mp3");
+  const tiktok = new Audio("/tiktok.mp3");
+
+  useEffect(() => {
+    if (state.isPomodoro === true && state.remainingPomodoro === 0) {
+      dispatch({ type: "resetRemainingPomodoro" });
+    }
+  }, [state.isPomodoro]);
 
   useEffect(() => {
     if (state.isPomodoro === true) {
       setTheme("bg-red-500");
+      setTime(convert(state.pomodoro));
     } else if (state.isShortBreak === true) {
       setTheme("bg-green-500");
+      setTime(convert(state.shortBreak));
     } else if (state.isLongBreak === true) {
       setTheme("bg-blue-500");
+      setTime(convert(state.longBreak));
     }
     dispatch({ type: "resetCountdown" });
-    setTime(convert(state.pomodoro));
-  }, [state.isPomodoro, state.isShortBreak, state.isLongBreak]);
+
+    if (state.autoPomodoro === true) {
+      dispatch({ type: "toggleAutoNext", payload: true });
+    } else if (state.autoShortBreak === true) {
+      dispatch({ type: "toggleAutoNext", payload: true });
+    } else dispatch({ type: "toggleAutoNext", payload: false });
+  }, [
+    state.pomodoro,
+    state.shortBreak,
+    state.longBreak,
+    state.isPomodoro,
+    state.isShortBreak,
+    state.isLongBreak,
+    state.autoPomodoro,
+    state.autoShortBreak,
+  ]);
 
   useEffect(() => {
     setTime(convert(state.remainingTime));
   }, [state.remainingTime]);
 
   useEffect(() => {
+    const endFunction = () => {
+      if (state.isInitialLoad === true) {
+        dispatch({ type: "initialLoad" });
+      }
+      alarm.play();
+      if (state.isPomodoro === true) {
+        dispatch({ type: "endCycle" });
+      }
+      dispatch({ type: "stopPomodoro" });
+      setTime(initialTime);
+      dispatch({ type: "normalEnd" });
+    };
+
     if (state.isRunning && state.remainingTime === 0) {
       dispatch({ type: "resetCountdown" });
       setTime(convert(state.pomodoro));
     }
     if (state.isRunning && state.pomodoro !== 0) {
       intervalId = setInterval(() => {
+        tiktok.play();
         dispatch({ type: "countDown" });
       }, 1000);
       timeout = setTimeout(() => {
         clearInterval(intervalId);
-        if (state.isInitialLoad === true) {
-          dispatch({ type: "initialLoad" });
-        }
-        alarm.play();
-        dispatch({ type: "stopPomodoro" });
-
-        if (state.isShortBreak === true && state.autoPomodoro === true) {
-          dispatch({ type: "toggleAutoNext", payload: true });
-        } else if (state.isPomodoro === true && state.autoShortBreak === true) {
-          dispatch({ type: "toggleAutoNext", payload: true });
-        } else dispatch({ type: "toggleAutoNext", payload: false });
+        endFunction();
       }, state.remainingTime * 1000 + 1000);
+    }
+    if (state.isSkip === true) {
+      dispatch({ type: "skip", payload: false });
+      endFunction();
     }
 
     return () => {
       clearInterval(intervalId);
       clearTimeout(timeout);
     };
-  }, [state.isRunning]);
+  }, [state.isRunning, state.skip]);
 
   useEffect(() => {
     var timeoutAuto: any;
-    console.log("DEBUG");
-    if (state.autoNext === true) {
-      console.log("Trigger auto next true");
-      console.log("isInitialLoad", state.isInitialLoad);
-      console.log("autoPomodoro", state.autoPomodoro);
-      console.log("isPomodoro", state.isPomodoro);
-      if (state.autoShortBreak === true && state.isShortBreak === true) {
-        timeoutAuto = setTimeout(() => {
-          dispatch({ type: "continuePomodoro" });
-          audio.play();
-        }, 2000);
-      } else if (
+    if (!state.isChangeMenu) {
+      if (state.autoShortBreak === true)
+        if (state.isLongBreak === true || state.isShortBreak === true) {
+          timeoutAuto = setTimeout(() => {
+            dispatch({ type: "continuePomodoro" });
+            audio.play();
+          }, 3000);
+        }
+      if (
         state.isInitialLoad === false &&
         state.autoPomodoro === true &&
         state.isPomodoro === true
@@ -87,7 +112,7 @@ export function Counter() {
         timeoutAuto = setTimeout(() => {
           dispatch({ type: "continuePomodoro" });
           audio.play();
-        }, 2000);
+        }, 3000);
       }
     }
 
@@ -99,7 +124,7 @@ export function Counter() {
   return (
     <div
       id="pomo-container"
-      className={`${theme} min-h-[25rem] m-20 rounded-lg`}
+      className={`${theme} h-[calc(100vh)] p-15 grid content-center rounded-md`}
     >
       <div id="pomo-menu" className="p-8">
         <div className="flex justify-around">
@@ -141,11 +166,17 @@ export function Counter() {
               ? "0" + time.minutes
               : time.minutes}
             :
-            {time.seconds == 0
-              ? "00"
-              : time.seconds < 10
-              ? "0" + time.seconds
-              : time.seconds}
+            {state.remainingPomodoro >= 0 ? (
+              <>
+                {time.seconds == 0
+                  ? "00"
+                  : time.seconds < 10
+                  ? "0" + time.seconds
+                  : time.seconds}
+              </>
+            ) : (
+              "00"
+            )}
           </p>
         </div>
       </div>
@@ -168,7 +199,9 @@ export function Counter() {
               }}
             >
               <ButtonLarge color="orange">PAUSE</ButtonLarge>
-              <NextButton />
+              <NextButton
+                onClick={() => dispatch({ type: "skip", payload: true })}
+              />
             </span>
           ) : !state.isRunning && state.isPause ? (
             <span
@@ -178,6 +211,9 @@ export function Counter() {
               }}
             >
               <ButtonLarge color="orange">RESUME</ButtonLarge>
+              <NextButton
+                onClick={() => dispatch({ type: "skip", payload: true })}
+              />
             </span>
           ) : null}
         </div>

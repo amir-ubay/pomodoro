@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer } from "react";
 
 var initialData = {
+  isChangeMenu: false,
   isInitialLoad: true,
   isRunning: false,
   isPause: false,
@@ -8,18 +9,56 @@ var initialData = {
   isShortBreak: false,
   isLongBreak: false,
   remainingTime: 0,
-  remainingShortBreak: 0,
-  pomodoro: 3,
-  shortBreak: 4,
-  longBreak: 5,
+  remainingPomodoro: 0,
+  pomodoro: 15 * 60,
+  shortBreak: 5 * 60,
+  longBreak: 15 * 60,
   autoNext: false,
-  autoPomodoro: true,
-  autoShortBreak: true,
-  iteratorLongBreak: 2,
+  autoPomodoro: false,
+  autoShortBreak: false,
+  iteratorLongBreak: 4,
+  isSkip: false,
 };
 
 const pomoReducer = (state: any, action: any) => {
   switch (action.type) {
+    case "normalEnd": {
+      return {
+        ...state,
+        isChangeMenu: false,
+      };
+    }
+
+    case "settingPomodoro": {
+      return {
+        ...state,
+        pomodoro: action.payload.pomodoro,
+        shortBreak: action.payload.shortBreak,
+        longBreak: action.payload.longBreak,
+        autoPomodoro: action.payload.autoPomodoro,
+        autoShortBreak: action.payload.autoShortBreak,
+        iteratorLongBreak: action.payload.iteratorLongBreak,
+        isRunning: false,
+      };
+    }
+    case "skip": {
+      return {
+        ...state,
+        isSkip: action.payload,
+      };
+    }
+    case "endCycle":
+      return {
+        ...state,
+        remainingPomodoro: state.remainingPomodoro - 1,
+      };
+
+    case "resetRemainingPomodoro":
+      return {
+        ...state,
+        remainingPomodoro: state.iteratorLongBreak,
+      };
+
     case "toggleAutoNext":
       return {
         ...state,
@@ -37,6 +76,9 @@ const pomoReducer = (state: any, action: any) => {
         isPomodoro: true,
         isShortBreak: false,
         isLongBreak: false,
+        isChangeMenu: true,
+        isRunning: false,
+        isPause: false,
       };
     case "selectShortBreak":
       return {
@@ -44,6 +86,9 @@ const pomoReducer = (state: any, action: any) => {
         isPomodoro: false,
         isShortBreak: true,
         isLongBreak: false,
+        isChangeMenu: true,
+        isRunning: false,
+        isPause: false,
       };
     case "selectLongBreak":
       return {
@@ -51,6 +96,9 @@ const pomoReducer = (state: any, action: any) => {
         isPomodoro: false,
         isShortBreak: false,
         isLongBreak: true,
+        isChangeMenu: true,
+        isRunning: false,
+        isPause: false,
       };
 
     case "resetCountdown":
@@ -104,7 +152,7 @@ const pomoReducer = (state: any, action: any) => {
           isLongBreak: false,
           remainingTime: state.pomodoro,
         };
-      } else if (state.iteratorLongBreak > 0 && state.isPomodoro === true) {
+      } else if (state.remainingPomodoro > 0 && state.isPomodoro === true) {
         return {
           ...state,
           isPomodoro: false,
@@ -114,7 +162,7 @@ const pomoReducer = (state: any, action: any) => {
           isLongBreak: false,
           remainingTime: state.shortBreak,
         };
-      } else if (state.iteratorLongBreak === 0 && state.isPomodoro === true) {
+      } else if (state.remainingPomodoro === 0 && state.isPomodoro === true) {
         return {
           ...state,
           isPomodoro: false,

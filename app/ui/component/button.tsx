@@ -64,7 +64,7 @@ export function PomoButton({
     <button
       onClick={onClick}
       type="button"
-      className={`${sizeClass} inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent text-white ${bgColor} focus:outline-none sdisabled:opacity-50 disabled:pointer-events-none`}
+      className={`${sizeClass} transition-all inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent text-white ${bgColor} focus:outline-none sdisabled:opacity-50 disabled:pointer-events-none`}
     >
       {children}
     </button>

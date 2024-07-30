@@ -1,5 +1,41 @@
-export function Modal({ display }: { display: boolean }) {
+import { CounterContext } from "./CounterProvider";
+import { useContext, useEffect, useState } from "react";
+
+export function Modal({
+  display,
+  onClickClose,
+}: {
+  display: boolean;
+  onClickClose: () => void;
+}) {
   let displayClases = display ? "block" : "hidden";
+  const { state, dispatch } = useContext(CounterContext);
+
+  var initialData = {
+    pomodoro: state.pomodoro / 60,
+    shortBreak: state.shortBreak / 60,
+    longBreak: state.longBreak / 60,
+    autoPomodoro: state.autoPomodoro,
+    autoShortBreak: state.autoShortBreak,
+    iteratorLongBreak: state.iteratorLongBreak,
+  };
+
+  let [setting, setSetting] = useState({
+    ...initialData,
+  });
+
+  const saveSetting = () => {
+    dispatch({
+      type: "settingPomodoro",
+      payload: { ...setting },
+    });
+    onClickClose();
+  };
+
+  // useEffect(() => {
+  //   if (display === true) saveSetting();
+  // }, [display]);
+
   return (
     <div id="modal-container" className={`${displayClases} fixed inset-0 z-50`}>
       <div id="modal-overlay" className="fixed inset-0 bg-black bg-opacity-50">
@@ -9,7 +45,7 @@ export function Modal({ display }: { display: boolean }) {
         >
           <div
             id="modal-content"
-            className="w-2/3 h-auto bg-white m-auto rounded-lg"
+            className="w-[40rem] h-auto bg-white m-auto rounded-lg"
           >
             <div id="modal-header">
               <div className="w-full py-4 px-3 border-b-2 border-gray-200">
@@ -25,6 +61,13 @@ export function Modal({ display }: { display: boolean }) {
                   <div className="basis-1/3">
                     <p>Pomodoro</p>
                     <input
+                      value={setting.pomodoro}
+                      onChange={(e) => {
+                        setSetting({
+                          ...setting,
+                          pomodoro: Number(e.target.value) * 60,
+                        });
+                      }}
                       type="number"
                       className="mt-2 max-w-24 h-10 bg-gray-200 rounded-md px-1"
                     ></input>
@@ -32,6 +75,13 @@ export function Modal({ display }: { display: boolean }) {
                   <div className="basis-1/3">
                     <p>Short Break</p>
                     <input
+                      value={setting.shortBreak}
+                      onChange={(e) => {
+                        setSetting({
+                          ...setting,
+                          shortBreak: Number(e.target.value) * 60,
+                        });
+                      }}
                       type="number"
                       className="mt-2 max-w-24 h-10 bg-gray-200 rounded-md px-1"
                     ></input>
@@ -39,6 +89,13 @@ export function Modal({ display }: { display: boolean }) {
                   <div className="basis-1/3">
                     <p>Long Break</p>
                     <input
+                      value={setting.longBreak}
+                      onChange={(e) => {
+                        setSetting({
+                          ...setting,
+                          longBreak: Number(e.target.value) * 60,
+                        });
+                      }}
                       type="number"
                       className="mt-2 max-w-24 h-10 bg-gray-200 rounded-md px-1"
                     ></input>
@@ -53,6 +110,13 @@ export function Modal({ display }: { display: boolean }) {
                     </div>
                     <div className="basis-1/5">
                       <input
+                        checked={setting.autoShortBreak}
+                        onChange={(e) => {
+                          setSetting({
+                            ...setting,
+                            autoShortBreak: e.target.checked,
+                          });
+                        }}
                         type="checkbox"
                         id="hs-basic-usage"
                         className="relative w-[3.25rem] h-7 p-px bg-gray-100 border-transparent text-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:ring-blue-600 disabled:opacity-50 disabled:pointer-events-none checked:bg-none checked:text-blue-600 checked:border-blue-600 focus:checked:border-blue-600
@@ -71,6 +135,13 @@ before:inline-block before:size-6 before:bg-white checked:before:bg-blue-200 bef
                     </div>
                     <div className="basis-1/5">
                       <input
+                        checked={setting.autoPomodoro}
+                        onChange={(e) => {
+                          setSetting({
+                            ...setting,
+                            autoPomodoro: e.target.checked,
+                          });
+                        }}
                         type="checkbox"
                         id="hs-basic-usage"
                         className="relative w-[3.25rem] h-7 p-px bg-gray-100 border-transparent text-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:ring-blue-600 disabled:opacity-50 disabled:pointer-events-none checked:bg-none checked:text-blue-600 checked:border-blue-600 focus:checked:border-blue-600
@@ -89,6 +160,13 @@ before:inline-block before:size-6 before:bg-white checked:before:bg-blue-200 bef
                     </div>
                     <div className="basis-1/5">
                       <input
+                        value={setting.iteratorLongBreak}
+                        onChange={(e) => {
+                          setSetting({
+                            ...setting,
+                            iteratorLongBreak: Number(e.target.value),
+                          });
+                        }}
                         type="number"
                         className="mt-2 max-w-24 h-10 bg-gray-200 rounded-md px-1"
                       ></input>
@@ -97,16 +175,20 @@ before:inline-block before:size-6 before:bg-white checked:before:bg-blue-200 bef
                 </div>
               </div>
             </div>
-            <div id="modal-footer">
+            <div id="modal-footer" className="rounded-b-md">
               <div className="">
-                <div className="flex justify-end items-center gap-x-2 py-3 px-4 bg-gray-100">
+                <div className="flex justify-end items-center gap-x-2 py-3 px-4 bg-gray-100 rounded-b-md">
                   <button
+                    onClick={onClickClose}
                     type="button"
                     className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:bg-red-700 disabled:opacity-50 disabled:pointer-events-none"
                   >
                     Close
                   </button>
                   <button
+                    onClick={() => {
+                      saveSetting();
+                    }}
                     type="button"
                     className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:bg-green-700 disabled:opacity-50 disabled:pointer-events-none"
                   >

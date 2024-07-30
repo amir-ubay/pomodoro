@@ -1,7 +1,27 @@
-export function MainMenu() {
+"use client";
+import { useState } from "react";
+import { Modal } from "./modal";
+
+export default function Menu() {
+  const [isSettingOpen, setIsSettingOpen] = useState(false);
+
   return (
-    <nav className="p-5 border-b-2 border-orange-100">
-      <div className="flex flex-row">
+    <>
+      <MainMenu onClickSetting={() => setIsSettingOpen(true)} />
+      {isSettingOpen && (
+        <Modal
+          display={isSettingOpen}
+          onClickClose={() => setIsSettingOpen(false)}
+        />
+      )}
+    </>
+  );
+}
+
+function MainMenu({ onClickSetting }: { onClickSetting: () => void }) {
+  return (
+    <nav className="p-5 border-b-2 rounded-md absolute left-0 right-0 bg-white">
+      <div className="flex flex-row ">
         <div className="basis-1/2">
           <div className="flex flex-row">
             <div className="rounded-full bg-orange-600 text-white text-bold p-1">
@@ -29,6 +49,7 @@ export function MainMenu() {
           <div className="flex flex-row justify-end">
             <div className="">
               <button
+                onClick={onClickSetting}
                 type="button"
                 className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-orange-600 text-white hover:bg-orange-700 focus:outline-none focus:bg-orange-700 disabled:opacity-50 disabled:pointer-events-none"
               >

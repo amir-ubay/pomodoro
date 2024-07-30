@@ -1,6 +1,10 @@
-export default function NextButton() {
+export default function NextButton({ onClick }: { onClick: () => void }) {
   return (
-    <div id="next-button" className="absolute right-14 top-2 text-white">
+    <div
+      onClick={onClick}
+      id="next-button"
+      className="absolute right-14 top-2 text-white"
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"

@@ -1,16 +1,22 @@
 "use client";
 import CounterProvider from "./ui/CounterProvider";
-import { useReducer } from "react";
-import { Modal } from "./ui/modal";
+import { useState } from "react";
+import Menu from "./ui/mainMenu";
 import { Counter } from "./ui/counter";
 
 export default function Home() {
+  const [modal, setModal] = useState(false);
+
   return (
-    <main>
+    <>
       <CounterProvider>
-        <Counter />
-        <Modal display={false} />
+        <header className="bg-white relative">
+          <Menu />
+        </header>
+        <main>
+          <Counter />
+        </main>
       </CounterProvider>
-    </main>
+    </>
   );
 }
