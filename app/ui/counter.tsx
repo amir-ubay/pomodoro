@@ -1,3 +1,4 @@
+"use client";
 import { CounterContext } from "./CounterProvider";
 import { Button, ButtonLarge, PomoButton } from "./component/button";
 import { useState, useEffect } from "react";
@@ -12,9 +13,19 @@ export function Counter() {
   let intervalId: NodeJS.Timeout;
   let timeout: NodeJS.Timeout;
   const [theme, setTheme] = useState("red");
-  const audio = new Audio("/bip.mp3");
-  const alarm = new Audio("/alarm.mp3");
-  const tiktok = new Audio("/tiktok.mp3");
+
+  const [audio, setAudio] = useState<HTMLAudioElement>();
+  const [alarm, setAlarm] = useState<HTMLAudioElement>();
+  const [tiktok, setTiktok] = useState<HTMLAudioElement>();
+  // const audio = new Audio("/bip.mp3");
+  // const alarm = new Audio("/alarm.mp3");
+  // const tiktok = new Audio("/tiktok.mp3");
+
+  useEffect(() => {
+    setAudio(new Audio("/bip.mp3"));
+    setAlarm(new Audio("/alarm.mp3"));
+    setTiktok(new Audio("/tiktok.mp3"));
+  }, []);
 
   useEffect(() => {
     if (state.isPomodoro === true && state.remainingPomodoro === 0) {
@@ -60,7 +71,7 @@ export function Counter() {
       if (state.isInitialLoad === true) {
         dispatch({ type: "initialLoad" });
       }
-      alarm.play();
+      alarm?.play();
       if (state.isPomodoro === true) {
         dispatch({ type: "endCycle" });
       }
@@ -75,7 +86,7 @@ export function Counter() {
     }
     if (state.isRunning && state.pomodoro !== 0) {
       intervalId = setInterval(() => {
-        tiktok.play();
+        tiktok?.play();
         dispatch({ type: "countDown" });
       }, 1000);
       timeout = setTimeout(() => {
@@ -101,7 +112,7 @@ export function Counter() {
         if (state.isLongBreak === true || state.isShortBreak === true) {
           timeoutAuto = setTimeout(() => {
             dispatch({ type: "continuePomodoro" });
-            audio.play();
+            audio?.play();
           }, 3000);
         }
       if (
@@ -111,7 +122,7 @@ export function Counter() {
       ) {
         timeoutAuto = setTimeout(() => {
           dispatch({ type: "continuePomodoro" });
-          audio.play();
+          audio?.play();
         }, 3000);
       }
     }
@@ -186,7 +197,7 @@ export function Counter() {
             <span
               onClick={() => {
                 dispatch({ type: "startPomodoro" });
-                audio.play();
+                audio?.play();
               }}
             >
               <ButtonLarge color="orange">START</ButtonLarge>
@@ -195,7 +206,7 @@ export function Counter() {
             <span
               onClick={() => {
                 dispatch({ type: "pausePomodoro" });
-                audio.play();
+                audio?.play();
               }}
             >
               <ButtonLarge color="orange">PAUSE</ButtonLarge>
@@ -207,7 +218,7 @@ export function Counter() {
             <span
               onClick={() => {
                 dispatch({ type: "startPomodoro" });
-                audio.play();
+                audio?.play();
               }}
             >
               <ButtonLarge color="orange">RESUME</ButtonLarge>
